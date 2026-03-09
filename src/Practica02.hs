@@ -6,7 +6,7 @@ data Prop = Var String | Cons Bool | Not Prop
             | Impl Prop Prop | Syss Prop Prop
             deriving (Eq)
 
-instance Show Prop where 
+instance Show Prop where
                     show (Cons True) = "⊤"
                     show (Cons False) = "⊥"
                     show (Var p) = p
@@ -28,26 +28,62 @@ u = Var "u"
 type Estado = [String]
 
 --EJERCICIOS
-
 --Ejercicio 1
 variables :: Prop -> [String]
-variables = undefined
+variables (Cons _) = []
+variables (Var v) = [v]
+variables (Not a) = variables a
+variables (Or a b) = conjunto (variables a) (variables b)
+variables (And a b) = conjunto (variables a) (variables b)
+variables (Impl a b) = conjunto (variables a) (variables b)
+variables (Syss a b) = conjunto (variables a) (variables b)
+
+-- Auxiliar para crear un conjunto
+conjunto :: [String] -> [String] -> [String]
+conjunto [] l = l
+conjunto (x:xs) l = conjunto xs (set x l)
+
+set :: String -> [String] -> [String]
+set s [] = [s]
+set s (x:xs) = if s == x then x:xs else x : set s xs
 
 --Ejercicio 2
 interpretacion :: Prop -> Estado -> Bool
-interpretacion = undefined
+interpretacion (Cons True) _ = True
+interpretacion (Cons False) _ = False
+interpretacion (Var v) state = pertenece v state
+interpretacion (Not v) state = not (interpretacion v state)
+interpretacion (Or a b) state = interpretacion a state || interpretacion b state
+interpretacion (And a b) state = interpretacion a state && interpretacion b state
+interpretacion (Impl a b) state = interpretacion (Or (Not a) b) state
+interpretacion (Syss a b) state = interpretacion (Impl a b) state == interpretacion (Impl b a) state
+
+pertenece :: Eq a => a -> [a] -> Bool
+pertenece _ [] = False
+pertenece a (x:xs) = (a == x) || pertenece a xs
 
 --Ejercicio 3
 estadosPosibles :: Prop -> [Estado]
-estadosPosibles = undefined
+estadosPosibles (Cons _) = []
+estadosPosibles prop = conjPotencia (variables prop)
 
 --Ejercicio 4
 modelos :: Prop -> [Estado]
-modelos = undefined
+modelos prop = probador prop (estadosPosibles prop)
+
+
+probador :: Prop -> [Estado] -> [Estado]
+probador prop [] = []
+probador prop (x:xs) = if interpretacion prop x then x : probador prop xs else probador prop xs
+
 
 --Ejercicio 5
 sonEquivalentes :: Prop -> Prop -> Bool
-sonEquivalentes = undefined
+sonEquivalentes p1 p2 = comparador (modelos p1) (modelos p2) && comparador (modelos p2) (modelos p1) 
+
+comparador :: [Estado] -> [Estado] -> Bool
+comparador [] _ = True
+comparador (x:xs) l2 = pertenece x l2 
 
 --Ejercicio 6 
 tautologia :: Prop -> Bool
