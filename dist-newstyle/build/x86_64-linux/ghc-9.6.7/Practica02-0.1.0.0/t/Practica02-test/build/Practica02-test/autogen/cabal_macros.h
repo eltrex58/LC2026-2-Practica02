@@ -30,15 +30,15 @@
   (major1) == 4 && (major2) <  18 || \
   (major1) == 4 && (major2) == 18 && (minor) <= 3)
 #endif /* MIN_VERSION_base */
-/* package hspec-2.11.16 */
+/* package hspec-2.11.17 */
 #ifndef VERSION_hspec
-#define VERSION_hspec "2.11.16"
+#define VERSION_hspec "2.11.17"
 #endif /* VERSION_hspec */
 #ifndef MIN_VERSION_hspec
 #define MIN_VERSION_hspec(major1,major2,minor) (\
   (major1) <  2 || \
   (major1) == 2 && (major2) <  11 || \
-  (major1) == 2 && (major2) == 11 && (minor) <= 16)
+  (major1) == 2 && (major2) == 11 && (minor) <= 17)
 #endif /* MIN_VERSION_hspec */
 
 /* tool gcc-15.2.1 */

@@ -33,26 +33,24 @@ variables :: Prop -> [String]
 variables (Cons _) = []
 variables (Var v) = [v]
 variables (Not a) = variables a
-variables (Or a b) = conjunto (variables a) (variables b)
-variables (And a b) = conjunto (variables a) (variables b)
-variables (Impl a b) = conjunto (variables a) (variables b)
-variables (Syss a b) = conjunto (variables a) (variables b)
+variables (Or a b) = union (variables a) (variables b)
+variables (And a b) = union (variables a) (variables b)
+variables (Impl a b) = union (variables a) (variables b)
+variables (Syss a b) = union (variables a) (variables b)
 
 -- Auxiliar para crear un conjunto
-conjunto :: [String] -> [String] -> [String]
-conjunto [] l = l
-conjunto (x:xs) l = conjunto xs (set x l)
-
-set :: String -> [String] -> [String]
-set s [] = [s]
-set s (x:xs) = if s == x then x:xs else x : set s xs
+union :: [String] -> [String] -> [String]
+union ys [] = ys
+union ys (x:xs)
+    | pertenece x ys = union ys xs
+    | otherwise      = union (ys ++ [x]) xs
 
 --Ejercicio 2
 interpretacion :: Prop -> Estado -> Bool
 interpretacion (Cons True) _ = True
 interpretacion (Cons False) _ = False
 interpretacion (Var v) state = pertenece v state
-interpretacion (Not v) state = not (interpretacion v state)
+interpretacion (Not a) state = not (interpretacion a state)
 interpretacion (Or a b) state = interpretacion a state || interpretacion b state
 interpretacion (And a b) state = interpretacion a state && interpretacion b state
 interpretacion (Impl a b) state = interpretacion (Or (Not a) b) state
@@ -69,16 +67,20 @@ estadosPosibles prop = conjPotencia (variables prop)
 
 --Ejercicio 4
 modelos :: Prop -> [Estado]
-modelos prop = probador prop (estadosPosibles prop)
+modelos prop = tester prop (estadosPosibles prop)
 
 
-probador :: Prop -> [Estado] -> [Estado]
-probador prop [] = []
-probador prop (x:xs) = if interpretacion prop x then x : probador prop xs else probador prop xs
+tester :: Prop -> [Estado] -> [Estado]
+tester prop [] = []
+tester prop (x:xs) = 
+    if interpretacion prop x 
+        then x : tester prop xs 
+        else tester prop xs
 
 
 --Ejercicio 5
 sonEquivalentes :: Prop -> Prop -> Bool
+
 sonEquivalentes p1 p2 = comparador (modelos p1) (modelos p2) && comparador (modelos p2) (modelos p1) 
 
 comparador :: [Estado] -> [Estado] -> Bool
