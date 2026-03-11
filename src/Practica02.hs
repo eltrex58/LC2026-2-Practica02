@@ -38,27 +38,23 @@ variables (And a b) = union (variables a) (variables b)
 variables (Impl a b) = union (variables a) (variables b)
 variables (Syss a b) = union (variables a) (variables b)
 
--- Auxiliar para crear un conjunto
+-- Une dos listas evitando elementos repetidos en la resultante.
 union :: [String] -> [String] -> [String]
 union ys [] = ys
 union ys (x:xs)
-    | pertenece x ys = union ys xs
+    | elem x ys = union ys xs
     | otherwise      = union (ys ++ [x]) xs
 
 --Ejercicio 2
 interpretacion :: Prop -> Estado -> Bool
 interpretacion (Cons True) _ = True
 interpretacion (Cons False) _ = False
-interpretacion (Var v) state = pertenece v state
+interpretacion (Var v) state = elem v state
 interpretacion (Not a) state = not (interpretacion a state)
 interpretacion (Or a b) state = interpretacion a state || interpretacion b state
 interpretacion (And a b) state = interpretacion a state && interpretacion b state
 interpretacion (Impl a b) state = interpretacion (Or (Not a) b) state
 interpretacion (Syss a b) state = interpretacion (Impl a b) state == interpretacion (Impl b a) state
-
-pertenece :: Eq a => a -> [a] -> Bool
-pertenece _ [] = False
-pertenece a (x:xs) = (a == x) || pertenece a xs
 
 --Ejercicio 3
 estadosPosibles :: Prop -> [Estado]
@@ -69,6 +65,8 @@ estadosPosibles prop = conjPotencia (variables prop)
 modelos :: Prop -> [Estado]
 modelos prop = tester prop (estadosPosibles prop)
 
+
+-- Reduce la lista de estados posibles a los modelos de la proposición
 tester :: Prop -> [Estado] -> [Estado]
 tester prop [] = []
 tester prop (x:xs) = 
