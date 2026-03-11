@@ -69,7 +69,6 @@ estadosPosibles prop = conjPotencia (variables prop)
 modelos :: Prop -> [Estado]
 modelos prop = tester prop (estadosPosibles prop)
 
-
 tester :: Prop -> [Estado] -> [Estado]
 tester prop [] = []
 tester prop (x:xs) = 
@@ -80,25 +79,56 @@ tester prop (x:xs) =
 
 --Ejercicio 5
 sonEquivalentes :: Prop -> Prop -> Bool
+sonEquivalentes p1 p2 = contencion (modelos p1) (modelos p2)  && contencion (modelos p2) (modelos p1)
 
-sonEquivalentes p1 p2 = comparador (modelos p1) (modelos p2) && comparador (modelos p2) (modelos p1) 
+--Nos dice si una lista de estados esta contenida en otra.
+contencion :: [Estado] -> [Estado] -> Bool
+contencion [] _ = True
+contencion (x:xs) l2 = elemf x l2 && contencion xs l2
 
-comparador :: [Estado] -> [Estado] -> Bool
-comparador [] _ = True
-comparador (x:xs) l2 = pertenece x l2 
+--Nos dice si un string esta contenido en otro
+eqCont :: [String] -> [String] -> Bool
+eqCont [] _ = True
+eqCont (x:xs) y = elem x y && eqCont xs y
+
+-- Nos dice si dos listas de cadenas son iguales 
+eqf :: [String] -> [String] -> Bool
+eqf x y = eqCont x y && eqCont y x
+
+--Nos dice si un etado está en una lista de estados.
+elemf :: Estado -> [Estado] -> Bool
+elemf [] [] = True
+elemf x [] = False
+elemf x (y:ys) = eqf x y || elemf x ys
 
 --Ejercicio 6 
 tautologia :: Prop -> Bool
-tautologia = undefined
+tautologia p = length (modelos p) == length (estadosPosibles p)
 
 --Ejercicio 7
 contradiccion :: Prop -> Bool
-contradiccion = undefined
+contradiccion p = length (modelos p) == 0
 
 --Ejercicio 8
 consecuenciaLogica :: [Prop] -> Prop -> Bool
-consecuenciaLogica = undefined
+consecuenciaLogica p c = not (satifacible ( p++[Not c] ) (conjPotencia (totalVar p)) )
+{- Usaremos el principio de refutacion, se da la concecuencia syss p++[Not c] es insatisfacible
+Asi que usamos el not (pues si es satisfacible, entonces la concecuencia no se da) y viciversa -}
 
+-- funcion que devuelve la lista de variariables totales(sin repeticion)
+totalVar :: [Prop] -> [String]
+totalVar [] = []
+totalVar (x:xs) = union (variables x) (totalVar xs)
+
+--Funcion que devuelve si la lista de propociciones es satisfacible dado un estado
+interp :: [Prop] -> Estado -> Bool
+interp [] e = True
+interp (x:xs) e = interpretacion x e && interp xs e
+
+--Función que checa si en alguno de los estados, todas las formulas son verdaderas
+satifacible :: [Prop] -> [Estado] -> Bool
+satifacible p [] = False -- Pues para que sea satisfaciblem lguno de los estados debe cumplir
+satifacible p (x:xs) = interp p x || satifacible p xs
 
 --Funcion auxiliar
 conjPotencia :: [a] -> [[a]]
