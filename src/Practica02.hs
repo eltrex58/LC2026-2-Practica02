@@ -69,7 +69,6 @@ estadosPosibles prop = conjPotencia (variables prop)
 modelos :: Prop -> [Estado]
 modelos prop = tester prop (estadosPosibles prop)
 
-
 tester :: Prop -> [Estado] -> [Estado]
 tester prop [] = []
 tester prop (x:xs) = 
@@ -92,7 +91,7 @@ eqCont :: [String] -> [String] -> Bool
 eqCont [] _ = True
 eqCont (x:xs) y = elem x y && eqCont xs y
 
--- Nos dice si dos lidtas de cadenas son iguales 
+-- Nos dice si dos listas de cadenas son iguales 
 eqf :: [String] -> [String] -> Bool
 eqf x y = eqCont x y && eqCont y x
 
@@ -112,14 +111,24 @@ contradiccion p = length (modelos p) == 0
 
 --Ejercicio 8
 consecuenciaLogica :: [Prop] -> Prop -> Bool
-consecuenciaLogica = undefined
--- Usaremos el principio de contradiccion para demostrar esto
+consecuenciaLogica p c = not (satifacible ( p++[Not c] ) (conjPotencia (totalVar p)) )
+{- Usaremos el principio de refutacion, se da la concecuencia syss p++[Not c] es insatisfacible
+Asi que usamos el not (pues si es satisfacible, entonces la concecuencia no se da) y viciversa -}
 
 -- funcion que devuelve la lista de variariables totales(sin repeticion)
 totalVar :: [Prop] -> [String]
-totalVar = undefined
---Funcion que devuelve la lista con los posibles valores de cada formula al ser evaluada
+totalVar [] = []
+totalVar (x:xs) = union (variables x) (totalVar xs)
 
+--Funcion que devuelve si la lista de propociciones es satisfacible dado un estado
+interp :: [Prop] -> Estado -> Bool
+interp [] e = True
+interp (x:xs) e = interpretacion x e && interp xs e
+
+--Función que checa si en alguno de los estados, todas las formulas son verdaderas
+satifacible :: [Prop] -> [Estado] -> Bool
+satifacible p [] = False -- Pues para que sea satisfaciblem lguno de los estados debe cumplir
+satifacible p (x:xs) = interp p x || satifacible p xs
 
 --Funcion auxiliar
 conjPotencia :: [a] -> [[a]]
